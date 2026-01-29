@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}English Learning{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Основные стили -->
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+
+    {% block extra_css %}{% endblock %}
+
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='images/favicon.ico') }}">
+</head>
+<body>
+    <!-- Навигация -->
+    {% block navbar %}
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="fas fa-language"></i>
+                <span>LinguaFlow</span>
+            </a>
+
+            <div class="nav-links">
+                {% if user %}
+                <a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Кабинет</a>
+                <a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                <span class="user-avatar">{{ user.username|first|upper }}</span>
+                {% else %}
+                <a href="/login" class="nav-link"><i class="fas fa-sign-in-alt"></i> Войти</a>
+                <a href="/register" class="nav-btn">Регистрация</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    {% endblock %}
+
+    <!-- Основной контент -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Футер -->
+    {% block footer %}
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3><i class="fas fa-language"></i> LinguaFlow</h3>
+                <p>Учи английский с умом и удовольствием</p>
+            </div>
+            <div class="footer-section">
+                <h4>Быстрые ссылки</h4>
+                <a href="/">Главная</a>
+                <a href="/login">Вход</a>
+                <a href="/register">Регистрация</a>
+            </div>
+            <div class="footer-section">
+                <h4>Контакты</h4>
+                <p><i class="fas fa-envelope"></i> support@linguaflow.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 LinguaFlow. Все права защищены.</p>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <!-- Скрипты -->
+    <script src="{{ url_for('static', path='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

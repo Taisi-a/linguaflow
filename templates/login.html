@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Вход - LinguaFlow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1><i class="fas fa-sign-in-alt"></i> Вход в систему</h1>
+            <p>Войдите в свой аккаунт чтобы продолжить обучение</p>
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <form class="auth-form" action="/login" method="post">
+            <div class="form-group">
+                <label for="username">
+                    <i class="fas fa-user"></i> Имя пользователя
+                </label>
+                <input type="text" id="username" name="username" required 
+                       placeholder="Введите ваш username" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">
+                    <i class="fas fa-lock"></i> Пароль
+                </label>
+                <div class="password-input">
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Введите ваш пароль" class="form-input">
+                    <button type="button" class="password-toggle">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-sign-in-alt"></i> Войти
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Еще нет аккаунта? <a href="/register" class="auth-link">Зарегистрироваться</a></p>
+            <p><a href="/" class="auth-link"><i class="fas fa-arrow-left"></i> На главную</a></p>
+        </div>
+        
+        <div class="demo-card">
+            <h4><i class="fas fa-vial"></i> Для тестирования</h4>
+            <p><strong>Username:</strong> testuser</p>
+            <p><strong>Password:</strong> password123</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelector('.password-toggle').addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
+    const icon = this.querySelector('i');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+});
+</script>
+{% endblock %}

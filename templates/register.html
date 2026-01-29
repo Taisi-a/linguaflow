@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация - LinguaFlow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1><i class="fas fa-user-plus"></i> Регистрация</h1>
+            <p>Создайте аккаунт чтобы начать обучение</p>
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <form class="auth-form" action="/register" method="post">
+            <div class="form-group">
+                <label for="username">
+                    <i class="fas fa-user"></i> Имя пользователя
+                </label>
+                <input type="text" id="username" name="username" required 
+                       placeholder="Придумайте username" class="form-input"
+                       value="{{ username or '' }}">
+                <small class="form-hint">От 3 до 20 символов</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <input type="email" id="email" name="email" required 
+                       placeholder="your@email.com" class="form-input"
+                       value="{{ email or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">
+                    <i class="fas fa-lock"></i> Пароль
+                </label>
+                <div class="password-input">
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Создайте надежный пароль" class="form-input">
+                    <button type="button" class="password-toggle">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <small class="form-hint">Минимум 6 символов</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="level">
+                    <i class="fas fa-chart-line"></i> Уровень английского
+                </label>
+                <select id="level" name="level" class="form-input">
+                    <option value="beginner">Начинающий (Beginner)</option>
+                    <option value="intermediate">Средний (Intermediate)</option>
+                    <option value="advanced">Продвинутый (Advanced)</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-user-plus"></i> Зарегистрироваться
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Уже есть аккаунт? <a href="/login" class="auth-link">Войти</a></p>
+            <p><a href="/" class="auth-link"><i class="fas fa-arrow-left"></i> На главную</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Показать/скрыть пароль
+document.querySelector('.password-toggle').addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
+    const icon = this.querySelector('i');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+});
+</script>
+{% endblock %}

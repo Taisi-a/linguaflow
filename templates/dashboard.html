@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет - LinguaFlow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Приветствие -->
+    <div class="welcome-card">
+        <div class="welcome-content">
+            <h1>Добро пожаловать, <span class="username">{{ user.username }}</span>! 👋</h1>
+            <p>Твой прогресс в изучении английского</p>
+        </div>
+        <div class="user-badge">
+            <div class="avatar">{{ user.username|first|upper }}</div>
+            <div class="user-info">
+                <h3>{{ user.username }}</h3>
+                <span class="level-badge level-{{ user.level }}">
+                    {{ user.level|capitalize }}
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Статистика -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ word_count }}</h3>
+                <p>Слов в словаре</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-fire"></i>
+            </div>
+            <div class="stat-content">
+                <h3>7</h3>
+                <p>Дней подряд</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="stat-content">
+                <h3>85%</h3>
+                <p>Успеваемость</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3>45 мин</h3>
+                <p>Сегодня</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Основная сетка -->
+    <div class="dashboard-grid">
+        <!-- Словарь -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2><i class="fas fa-book-open"></i> Мой словарь</h2>
+                <span class="badge">{{ word_count }} слов</span>
+            </div>
+            
+            <div class="add-word-form">
+                <h3>Добавить новое слово</h3>
+                <form action="/words/add" method="post">
+                    <div class="form-row">
+                        <input type="text" name="english" placeholder="Английское слово" required>
+                        <input type="text" name="russian" placeholder="Перевод" required>
+                    </div>
+                    <div class="form-row">
+                        <textarea name="example" placeholder="Пример использования (необязательно)" rows="2"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <select name="category" class="category-select">
+                            <option value="general">Общие</option>
+                            <option value="business">Бизнес</option>
+                            <option value="travel">Путешествия</option>
+                            <option value="technology">Технологии</option>
+                            <option value="food">Еда</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Добавить
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="words-list">
+                <h3>Последние добавленные слова</h3>
+                
+                {% if words %}
+                    {% for word in words %}
+                    <div class="word-card">
+                        <div class="word-header">
+                            <div class="word-main">
+                                <h4>{{ word.english }}</h4>
+                                <span class="word-translation">{{ word.russian }}</span>
+                            </div>
+                            <div class="word-actions">
+                                <span class="word-category">{{ word.category }}</span>
+                                <a href="/words/delete/{{ word.id }}" class="btn-delete" 
+                                   onclick="return confirm('Удалить слово?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% if word.example %}
+                        <div class="word-example">
+                            <i class="fas fa-quote-left"></i>
+                            {{ word.example }}
+                        </div>
+                        {% endif %}
+                        <div class="word-date">
+                            <i class="far fa-calendar"></i>
+                            {{ word.added_date.strftime('%d.%m.%Y') }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-book"></i>
+                        <p>Ваш словарь пока пуст</p>
+                        <p>Добавьте первое слово выше!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Боковая панель -->
+        <div class="sidebar">
+            <!-- AI помощник -->
+            <div class="sidebar-card ai-assistant">
+                <div class="card-header">
+                    <h3><i class="fas fa-robot"></i> AI Помощник</h3>
+                </div>
+                <p>Готов помочь с изучением английского!</p>
+                <div class="ai-actions">
+                    <button class="btn btn-outline btn-sm">
+                        <i class="fas fa-comment"></i> Задать вопрос
+                    </button>
+                    <button class="btn btn-outline btn-sm">
+                        <i class="fas fa-play-circle"></i> Упражнение
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Цели -->
+            <div class="sidebar-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-bullseye"></i> Цели на неделю</h3>
+                </div>
+                <div class="goals-list">
+                    <div class="goal-item">
+                        <input type="checkbox" id="goal1" checked>
+                        <label for="goal1">Добавить 10 новых слов</label>
+                    </div>
+                    <div class="goal-item">
+                        <input type="checkbox" id="goal2">
+                        <label for="goal2">Пройти 5 упражнений</label>
+                    </div>
+                    <div class="goal-item">
+                        <input type="checkbox" id="goal3">
+                        <label for="goal3">Повторить старые слова</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Быстрые действия -->
+            <div class="sidebar-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-bolt"></i> Быстрые действия</h3>
+                </div>
+                <div class="quick-actions">
+                    <a href="#" class="quick-action">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Экспорт словаря</span>
+                    </a>
+                    <a href="#" class="quick-action">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Тренировка</span>
+                    </a>
+                    <a href="#" class="quick-action">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Статистика</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
