@@ -95,3 +95,76 @@ def test_line_extractor_parses_notebook_lines():
 
 def test_line_extractor_ignores_lines_without_russian():
     assert LineExtractor().extract("Present Perfect - have done") == []
+
+
+# ---------- провайдеры ----------
+
+import httpx  # noqa: E402
+
+from app.config import Settings  # noqa: E402
+from app.services.extraction import (  # noqa: E402
+    OllamaExtractor,
+    OpenAICompatibleExtractor,
+    get_llm_extractor,
+)
+
+
+class FakeResponse:
+    def __init__(self, payload, status=200):
+        self.payload = payload
+        self.status_code = status
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise httpx.HTTPStatusError("err", request=httpx.Request("POST", "http://x"), response=None)
+
+    def json(self):
+        return self.payload
+
+
+def test_ollama_sends_json_format_and_parses_answer(monkeypatch):
+    sent = {}
+
+    def fake_post(url, json, timeout, **kw):
+        sent.update(url=url, body=json)
+        return FakeResponse({"message": {"content": GOOD_JSON}})
+
+    monkeypatch.setattr(httpx, "post", fake_post)
+    items = OllamaExtractor("http://localhost:11434/", "qwen2.5:7b").extract("note", "topic")
+    assert sent["url"] == "http://localhost:11434/api/chat"
+    assert sent["body"]["format"] == "json" and sent["body"]["model"] == "qwen2.5:7b"
+    assert len(items) == 2
+
+
+def test_ollama_not_running_is_unavailable(monkeypatch):
+    def refuse(*a, **kw):
+        raise httpx.ConnectError("connection refused")
+
+    monkeypatch.setattr(httpx, "post", refuse)
+    with pytest.raises(ExtractionUnavailable):
+        OllamaExtractor("http://localhost:11434", "m").extract("note")
+
+
+def test_openai_compatible_parses_choices(monkeypatch):
+    def fake_post(url, headers, json, timeout):
+        assert url == "https://api.example.com/v1/chat/completions"
+        assert headers["Authorization"] == "Bearer key"
+        return FakeResponse({"choices": [{"message": {"content": GOOD_JSON}}]})
+
+    monkeypatch.setattr(httpx, "post", fake_post)
+    ex = OpenAICompatibleExtractor("https://api.example.com/v1", "key", "model")
+    assert len(ex.extract("note")) == 2
+
+
+@pytest.mark.parametrize(
+    "env, expected",
+    [
+        ({"llm_provider": "ollama"}, OllamaExtractor),
+        ({"llm_provider": "gemini", "gemini_api_key": "k"}, GeminiExtractor),
+        ({"llm_provider": "gemini"}, type(None)),  # без ключа — запасной режим
+        ({"llm_provider": "openai", "openai_api_key": "k", "openai_model": "m"}, OpenAICompatibleExtractor),
+        ({"llm_provider": "none"}, type(None)),
+    ],
+)
+def test_provider_selection(env, expected):
+    assert isinstance(get_llm_extractor(Settings(_env_file=None, **env)), expected)

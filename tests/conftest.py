@@ -2,7 +2,7 @@ import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite://")
 os.environ.setdefault("SECRET_KEY", "test-secret")
-os.environ.pop("GEMINI_API_KEY", None)
+os.environ["LLM_PROVIDER"] = "none"
 
 import pytest
 from fastapi.testclient import TestClient

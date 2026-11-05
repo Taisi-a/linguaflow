@@ -1,17 +1,19 @@
 """Извлечение слов и правил из заметки с занятия.
 
-Основной путь — LLM (Gemini): модель получает текст заметки и возвращает JSON,
-который проверяется Pydantic-схемой. Если ключа нет или сеть недоступна, работает
-запасной разборщик строк вида «come up with — придумать».
+Основной путь — LLM: по умолчанию локальная модель в Ollama, можно переключиться
+на Gemini или любой OpenAI-совместимый сервис (LLM_PROVIDER в .env). Модель получает
+текст заметки и возвращает JSON, который проверяется Pydantic-схемой. Если модель
+недоступна, работает запасной разборщик строк вида «come up with — придумать».
 """
 
 import json
 import re
 from typing import Protocol
 
+import httpx
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from app.config import get_settings
+from app.config import Settings, get_settings
 
 
 class ExtractedItem(BaseModel):
@@ -110,13 +112,89 @@ def normalize(text: str) -> str:
     return re.sub(r"\s+", " ", text.lower().strip(" .,;:!?\"'«»"))
 
 
-class GeminiExtractor:
+class LLMExtractor:
+    """Общая часть для всех моделей: промпт, разбор ответа и один повтор при мусоре."""
+
     name = "llm"
 
-    def __init__(self, api_key: str, model: str, retries: int = 1):
-        self.api_key = api_key
+    def __init__(self, model: str, retries: int = 1):
         self.model = model
         self.retries = retries
+
+    def _call(self, prompt: str) -> str:
+        raise NotImplementedError
+
+    def extract(self, text: str, topic: str = "") -> list[ExtractedItem]:
+        prompt = PROMPT.format(text=text, topic=topic or "не указана")
+        last_error: ExtractionError | None = None
+        for _ in range(self.retries + 1):
+            try:
+                return parse_llm_response(self._call(prompt))
+            except ExtractionError as e:
+                last_error = e
+        assert last_error is not None
+        raise last_error
+
+
+class OllamaExtractor(LLMExtractor):
+    """Локальная модель через Ollama: бесплатно, без VPN, заметки не уходят из ноутбука."""
+
+    def __init__(self, base_url: str, model: str, timeout: float = 120, retries: int = 1):
+        super().__init__(model, retries)
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+
+    def _call(self, prompt: str) -> str:
+        try:
+            r = httpx.post(
+                f"{self.base_url}/api/chat",
+                json={
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "format": "json",  # Ollama сама следит, чтобы ответ был валидным JSON
+                    "stream": False,
+                    "options": {"temperature": 0.2},
+                },
+                timeout=self.timeout,
+            )
+            r.raise_for_status()
+            return r.json()["message"]["content"]
+        except (httpx.HTTPError, KeyError, ValueError) as e:  # Ollama не запущена, нет модели
+            raise ExtractionUnavailable(str(e)) from e
+
+
+class OpenAICompatibleExtractor(LLMExtractor):
+    """Любой сервис с OpenAI-совместимым API (OpenRouter, YandexGPT, vLLM и т. п.)."""
+
+    def __init__(self, base_url: str, api_key: str, model: str, timeout: float = 60, retries: int = 1):
+        super().__init__(model, retries)
+        self.base_url = base_url.rstrip("/")
+        self.api_key = api_key
+        self.timeout = timeout
+
+    def _call(self, prompt: str) -> str:
+        try:
+            r = httpx.post(
+                f"{self.base_url}/chat/completions",
+                headers={"Authorization": f"Bearer {self.api_key}"},
+                json={
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.2,
+                    "response_format": {"type": "json_object"},
+                },
+                timeout=self.timeout,
+            )
+            r.raise_for_status()
+            return r.json()["choices"][0]["message"]["content"]
+        except (httpx.HTTPError, KeyError, IndexError, ValueError) as e:
+            raise ExtractionUnavailable(str(e)) from e
+
+
+class GeminiExtractor(LLMExtractor):
+    def __init__(self, api_key: str, model: str, retries: int = 1):
+        super().__init__(model, retries)
+        self.api_key = api_key
 
     def _call(self, prompt: str) -> str:
         try:
@@ -129,20 +207,9 @@ class GeminiExtractor:
                 contents=prompt,
                 config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.2),
             )
-        except Exception as e:  # сеть, квота, неверный ключ
+        except Exception as e:  # сеть, квота, неверный ключ, недоступный регион
             raise ExtractionUnavailable(str(e)) from e
         return response.text or ""
-
-    def extract(self, text: str, topic: str = "") -> list[ExtractedItem]:
-        prompt = PROMPT.format(text=text, topic=topic or "не указана")
-        last_error: ExtractionError | None = None
-        for _ in range(self.retries + 1):
-            try:
-                return parse_llm_response(self._call(prompt))
-            except ExtractionError as e:
-                last_error = e
-        assert last_error is not None
-        raise last_error
 
 
 # «come up with — придумать», «give up - бросить», «turn down: отказаться»
@@ -170,8 +237,19 @@ class LineExtractor:
         return deduplicate(items)
 
 
-def get_extractor() -> Extractor:
-    settings = get_settings()
-    if settings.gemini_api_key:
+def get_llm_extractor(settings: Settings | None = None) -> LLMExtractor | None:
+    settings = settings or get_settings()
+    provider = settings.llm_provider
+    if provider == "ollama":
+        return OllamaExtractor(settings.ollama_url, settings.ollama_model)
+    if provider == "openai" and settings.openai_api_key:
+        return OpenAICompatibleExtractor(
+            settings.openai_base_url, settings.openai_api_key, settings.openai_model
+        )
+    if provider == "gemini" and settings.gemini_api_key:
         return GeminiExtractor(settings.gemini_api_key, settings.gemini_model)
-    return LineExtractor()
+    return None
+
+
+def get_extractor() -> Extractor:
+    return get_llm_extractor() or LineExtractor()

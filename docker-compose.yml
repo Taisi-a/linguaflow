@@ -20,6 +20,10 @@ services:
         required: false
     environment:
       DATABASE_URL: postgresql+psycopg://linguaflow:linguaflow@db:5432/linguaflow
+      # Ollama запущена на самом Маке, а не в контейнере
+      OLLAMA_URL: http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
     depends_on:

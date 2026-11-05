@@ -21,8 +21,8 @@ from app.config import get_settings
 from app.services.extraction import (
     ExtractionError,
     ExtractionUnavailable,
-    GeminiExtractor,
     LineExtractor,
+    get_llm_extractor,
     normalize,
 )
 
@@ -85,21 +85,21 @@ def main() -> int:
     args = parser.parse_args()
 
     dataset = json.loads(args.dataset.read_text(encoding="utf-8"))
-    settings = get_settings()
     extractors = [LineExtractor()]
-    if settings.gemini_api_key:
-        extractors.insert(0, GeminiExtractor(settings.gemini_api_key, settings.gemini_model))
+    llm = get_llm_extractor()
+    if llm:
+        extractors.insert(0, llm)
     else:
-        print("GEMINI_API_KEY не задан — оценивается только разбор строк\n")
+        print(f"LLM_PROVIDER={get_settings().llm_provider} не настроен — оценивается только разбор строк\n")
 
     expected_total = sum(len(s["expected"]) for s in dataset)
     print(f"Заметок: {len(dataset)}, размеченных слов: {expected_total}\n")
-    print(f"{'Экстрактор':<12}{'Precision':>11}{'Recall':>9}{'F1':>7}{'Ошибок':>9}{'Сек/заметку':>13}")
+    print(f"{'Экстрактор':<16}{'Precision':>11}{'Recall':>9}{'F1':>7}{'Ошибок':>9}{'Сек/заметку':>13}")
 
     report = {}
     for ex in extractors:
         s = evaluate(ex, dataset)
-        name = f"{ex.name}:{getattr(ex, 'model', '')}".rstrip(":")
+        name = getattr(ex, "model", "") or ex.name
         print(
             f"{name:<12}{s.precision:>11.0%}{s.recall:>9.0%}{s.f1:>7.0%}{s.errors:>9}"
             f"{s.seconds / max(len(dataset), 1):>13.2f}"
