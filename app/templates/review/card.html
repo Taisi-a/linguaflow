@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Повторение — LinguaFlow{% endblock %}
+{% block content %}
+  <header class="review-top">
+    <a class="close-btn" href="/review/summary" aria-label="Закончить повторение">×</a>
+    <p class="hand-m">Карточка {{ progress.position }} из {{ progress.total }}</p>
+  </header>
+
+  <div data-review style="display:flex;flex-direction:column;gap:20px;flex:1">
+    {% set source %}{% if card.note %}Из заметки «{{ card.note.topic or "Без темы" }}», {{ card.note.lesson_date | ru_date }}{% endif %}{% endset %}
+
+    <section class="card-front flashcard flashcard--front {% if card.kind.value == 'rule' %}flashcard--rule{% endif %}">
+      {% if source %}<p class="caption">{{ source }}</p>{% endif %}
+      <p><span class="title">{{ card.text }}</span></p>
+      {% if card.transcription %}<p class="muted">{{ card.transcription }}</p>{% endif %}
+      {% if card.kind.value == "word" %}
+        <button type="button" class="speak" data-speak="{{ card.text }}" aria-label="Послушать произношение">🔊</button>
+      {% endif %}
+    </section>
+    <p class="hand-m center muted card-front">Вспомни перевод, потом переверни</p>
+
+    <div class="card-back">
+      <section class="flashcard {% if card.kind.value == 'rule' %}flashcard--rule{% endif %}">
+        {% if source %}<p class="caption">{{ source }}</p>{% endif %}
+        <p><span class="title">{{ card.text }}</span></p>
+        <p class="translation">{{ card.translation }}</p>
+        {% if card.example %}<p>{{ card.example }}</p>{% endif %}
+        {% if card.tutor_note %}<p class="tutor-note">Репетитор: «{{ card.tutor_note }}»</p>{% endif %}
+      </section>
+
+      <p class="hand-m center">Как вспомнилось?</p>
+      <form class="grades" method="post" action="/review/{{ card.id }}">
+        {% for b in buttons %}
+          <button class="grade grade--{{ b.grade }}" type="submit" name="grade" value="{{ b.grade }}" data-grade="{{ b.grade }}">
+            <b>{{ b.label }}</b><span>{{ b.hint }}</span>
+          </button>
+        {% endfor %}
+      </form>
+    </div>
+
+    <div class="bottom-action show-answer">
+      <button class="btn btn--primary btn--block" type="button" data-flip>Показать перевод</button>
+      <p class="caption center">Пробел — перевернуть, 1–4 — оценка</p>
+    </div>
+  </div>
+{% endblock %}

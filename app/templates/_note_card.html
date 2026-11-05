@@ -1,0 +1,18 @@
+{% set words = note.cards | selectattr("kind.value", "equalto", "word") | list %}
+{% set rules = note.cards | selectattr("kind.value", "equalto", "rule") | list %}
+<a class="note-card" href="/notes/{{ note.id }}">
+  <div class="note-card__top">
+    <span class="note-card__title">{{ note.topic or "Без темы" }}</span>
+    <span class="note-card__date">{{ note.lesson_date | ru_date }}</span>
+  </div>
+  {% if note.cards %}
+  <div class="chips">
+    {% for c in note.cards[:3] %}<span class="marker {{ 'marker--pink' if c.kind.value == 'rule' else 'marker--blue' }}">{{ c.text }}</span>{% endfor %}
+  </div>
+  {% endif %}
+  <span class="caption">
+    {% if note.cards %}{{ ru_plural(words|length, "слово", "слова", "слов") }}{% if rules %} · {{ ru_plural(rules|length, "правило", "правила", "правил") }}{% endif %}
+    {% elif note.extracted is not none %}Слова ещё не подтверждены
+    {% else %}Без карточек{% endif %}
+  </span>
+</a>

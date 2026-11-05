@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Слова из заметки — LinguaFlow{% endblock %}
+
+{% macro row(i, item, known=false) %}
+  <div class="word-row {% if known %}word-row--known{% endif %} {% if not item.text %}is-editing{% endif %}" data-row>
+    <input type="checkbox" name="items-{{ i }}-include" aria-label="Добавить {{ item.text }}" {% if not known %}checked{% endif %} data-include>
+    <div class="word-row__view">
+      <div class="word-row__text">{{ item.text }}{% if item.kind == "rule" %}<span class="tag marker--pink">правило</span>{% endif %}</div>
+      <div class="word-row__tr">{{ item.translation or "без перевода" }}{% if known %} · уже есть в словаре{% endif %}</div>
+    </div>
+    <button type="button" class="icon-btn word-row__view" data-edit aria-label="Изменить">✎</button>
+    <div class="word-row__edit">
+      <input class="input" name="items-{{ i }}-text" value="{{ item.text }}" placeholder="Слово или правило" aria-label="Слово">
+      <input class="input" name="items-{{ i }}-translation" value="{{ item.translation }}" placeholder="Перевод" aria-label="Перевод">
+      <input class="input" name="items-{{ i }}-example" value="{{ item.example }}" placeholder="Пример (необязательно)" aria-label="Пример">
+      <input class="input" name="items-{{ i }}-tutor_note" value="{{ item.tutor_note }}" placeholder="Пометка репетитора" aria-label="Пометка репетитора">
+      <select class="select" name="items-{{ i }}-kind" aria-label="Тип">
+        <option value="word" {% if item.kind != "rule" %}selected{% endif %}>Слово</option>
+        <option value="rule" {% if item.kind == "rule" %}selected{% endif %}>Правило</option>
+      </select>
+    </div>
+    <input type="hidden" name="items-{{ i }}-transcription" value="{{ item.transcription }}">
+  </div>
+{% endmacro %}
+
+{% block content %}
+  <a class="back-link" href="/notes/{{ note.id }}">Заметка</a>
+
+  {% if fallback == "offline" %}
+    <div class="alert alert--info">ИИ сейчас недоступен, поэтому нашли только строки вида «слово — перевод». Остальное можно добавить вручную.</div>
+  {% elif fallback == "bad_answer" %}
+    <div class="alert alert--info">ИИ ответил непонятно, поэтому нашли только строки вида «слово — перевод».</div>
+  {% endif %}
+
+  {% if items %}
+    <h1 class="hand-l">Нашли {{ ru_plural(items|length, "слово", "слова", "слов") }}</h1>
+    <p class="muted">Сними галочку со слов, которые уже знаешь</p>
+  {% else %}
+    <h1 class="hand-l">Слов не нашлось</h1>
+    <p class="muted">В заметке не нашлось английских слов. Добавь их вручную или вернись и допиши заметку.</p>
+  {% endif %}
+
+  <form class="form" method="post" action="/notes/{{ note.id }}/cards" style="flex:1">
+    <div class="word-rows" data-rows>
+      {% for item in items %}{{ row(loop.index0, item, item.known) }}{% endfor %}
+    </div>
+
+    <template data-row-template>
+      {{ row("__i__", {"text": "", "translation": "", "example": "", "tutor_note": "", "kind": "word", "transcription": ""}) }}
+    </template>
+
+    <div class="bottom-action">
+      <button class="btn btn--primary btn--block" type="submit" data-count-button>Добавить карточки</button>
+      <button class="btn btn--link" type="button" data-add-row>Добавить слово вручную</button>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Вход — LinguaFlow{% endblock %}
+{% block page_class %}auth-wrap{% endblock %}
+{% block content %}
+  <h1 class="hand-l">Мой английский</h1>
+  <p class="muted">Заметки с занятий, которые сами превращаются в карточки.</p>
+
+  {% if error %}<div class="alert alert--error" role="alert">{{ error }}</div>{% endif %}
+
+  <form class="form" method="post" action="/login">
+    <div class="field">
+      <label for="username">Имя пользователя</label>
+      <input class="input" id="username" name="username" value="{{ username or '' }}" autocomplete="username" autocapitalize="none" required>
+    </div>
+    <div class="field">
+      <label for="password">Пароль</label>
+      <input class="input" id="password" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <button class="btn btn--primary btn--block" type="submit">Войти</button>
+  </form>
+  <p class="center">Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
+{% endblock %}

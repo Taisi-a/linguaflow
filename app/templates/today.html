@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+  <header class="top">
+    <h1 class="hand-l">Мой английский</h1>
+    {% if streak %}<div class="streak" title="Дней подряд с повторением"><b>{{ streak }}</b><span>{{ plural(streak, "день", "дня", "дней") }}</span></div>{% endif %}
+  </header>
+
+  {% if not has_cards %}
+    <section class="sticker sticker--plain">
+      <p class="hand-m">Первый запуск</p>
+      <p class="heading">Перепиши сюда заметку с последнего занятия</p>
+      <p class="muted">Слова из неё станут карточками, а приложение напомнит, когда их повторить.</p>
+      <a class="btn btn--primary" href="/notes/new">Создать заметку</a>
+    </section>
+  {% elif due %}
+    <section class="sticker">
+      <p class="hand-m">На сегодня:</p>
+      <p class="heading">{{ ru_plural(due, "слово ждёт", "слова ждут", "слов ждут") }} повторения</p>
+      <a class="btn btn--primary" href="/review/start">Повторить</a>
+    </section>
+  {% else %}
+    <section class="sticker sticker--mint">
+      <p class="hand-m">Всё повторено!</p>
+      <p class="heading">На сегодня карточек больше нет</p>
+      {% if next_due %}<p>Следующие слова вернутся {{ next_due | ru_date(true) }}</p>{% endif %}
+    </section>
+  {% endif %}
+
+  <div class="section-head">
+    <h2 class="hand-m">Заметки с занятий</h2>
+    <a class="btn btn--small" href="/notes/new">+ Заметка</a>
+  </div>
+
+  {% if notes %}
+    <div class="note-list">
+      {% for note in notes %}{% include "_note_card.html" %}{% endfor %}
+    </div>
+    {% if notes|length >= 5 %}<a class="center" href="/notes">Все заметки</a>{% endif %}
+  {% else %}
+    <p class="muted">Заметок пока нет.</p>
+  {% endif %}
+{% endblock %}

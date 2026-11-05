@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Занятия — LinguaFlow{% endblock %}
+{% block content %}
+  <div class="section-head">
+    <h1 class="hand-l">Занятия</h1>
+    <a class="btn btn--small" href="/notes/new">+ Заметка</a>
+  </div>
+
+  {% if notes %}
+    <div class="note-list">
+      {% for note in notes %}{% include "_note_card.html" %}{% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <p class="hand-m">Тетрадь пока пустая</p>
+      <p class="muted">После занятия запиши сюда всё, что разбирали с репетитором.</p>
+      <a class="btn btn--primary" href="/notes/new">Новая заметка</a>
+    </div>
+  {% endif %}
+{% endblock %}
