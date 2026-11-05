@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFFFF">
+  <title>{% block title %}LinguaFlow{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='fonts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23FFE45C'/><text x='16' y='23' font-size='20' text-anchor='middle' font-family='serif' fill='%231C2233'>L</text></svg>">
+</head>
+<body>
+  <main class="page {% if hide_tabs %}page--no-tabs{% endif %} {% block page_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% if not hide_tabs and tab %}
+  <nav class="tabs" aria-label="Разделы">
+    <div class="tabs__inner">
+      <a class="tab {% if tab == 'today' %}is-active{% endif %}" href="/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4z"/></svg>
+        Сегодня
+      </a>
+      <a class="tab {% if tab == 'notes' %}is-active{% endif %}" href="/notes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>
+        Занятия
+      </a>
+      <a class="tab {% if tab == 'words' %}is-active{% endif %}" href="/words">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="3.5" width="12" height="15" rx="2"/><path d="M5 7v11.5A2 2 0 0 0 7 20.5h9"/></svg>
+        Слова
+      </a>
+      <a class="tab {% if tab == 'profile' %}is-active{% endif %}" href="/profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.2-4 4-5.5 7.5-5.5s6.3 1.5 7.5 5.5"/></svg>
+        Профиль
+      </a>
+    </div>
+  </nav>
+  {% endif %}
+
+  <script src="{{ url_for('static', path='app.js') }}" defer></script>
+</body>
+</html>

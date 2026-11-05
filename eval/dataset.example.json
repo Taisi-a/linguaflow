@@ -1,0 +1,17 @@
+[
+  {
+    "topic": "Phrasal verbs",
+    "text": "come up with — придумать\ngive up — бросить, сдаться\nlook forward to + -ing\nне путать come up with и come across\nД/З: 5 предложений с новыми глаголами",
+    "expected": ["come up with", "give up", "look forward to + -ing", "come across"]
+  },
+  {
+    "topic": "Present Perfect",
+    "text": "Present Perfect: have/has + V3\nalready, yet, just\nI have already done it. She hasn't called yet.\nеще раз: since vs for",
+    "expected": ["have/has + V3", "already", "yet", "just", "since", "for"]
+  },
+  {
+    "topic": "Travel",
+    "text": "boarding pass — посадочный\nlayover (пересадка), carry-on\nрепетитор: delay ≠ cancel!",
+    "expected": ["boarding pass", "layover", "carry-on", "delay", "cancel"]
+  }
+]

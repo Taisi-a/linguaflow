@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.db
+.idea/
+.vscode/
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+eval/dataset.json
+eval/results/

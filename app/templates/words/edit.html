@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ card.text }} — LinguaFlow{% endblock %}
+{% block content %}
+  <a class="back-link" href="/words">Слова</a>
+  <h1 class="hand-l">Карточка</h1>
+  {% if card.note %}<p class="caption">Из заметки <a href="/notes/{{ card.note.id }}">«{{ card.note.topic or "Без темы" }}»</a>, {{ card.note.lesson_date | ru_date }}</p>{% endif %}
+
+  <form class="form" method="post" action="/words/{{ card.id }}">
+    <div class="field"><label for="text">Слово или правило</label>
+      <input class="input" id="text" name="text" value="{{ card.text }}" required maxlength="200"></div>
+    <div class="field"><label for="translation">Перевод</label>
+      <input class="input" id="translation" name="translation" value="{{ card.translation }}" required maxlength="300"></div>
+    <div class="field"><label for="transcription">Транскрипция</label>
+      <input class="input" id="transcription" name="transcription" value="{{ card.transcription }}" maxlength="100"></div>
+    <div class="field"><label for="example">Пример</label>
+      <input class="input" id="example" name="example" value="{{ card.example }}"></div>
+    <div class="field"><label for="tutor_note">Пометка репетитора</label>
+      <input class="input" id="tutor_note" name="tutor_note" value="{{ card.tutor_note }}"></div>
+    <div class="field"><label for="kind">Тип</label>
+      <select class="select" id="kind" name="kind">
+        <option value="word" {% if card.kind.value == "word" %}selected{% endif %}>Слово</option>
+        <option value="rule" {% if card.kind.value == "rule" %}selected{% endif %}>Правило</option>
+      </select></div>
+    <p class="caption">
+      {% if card.status.value == "new" %}Ещё не повторялась{% else %}Интервал: {{ ru_plural(card.interval_days, "день", "дня", "дней") }} · следующее повторение {{ card.due_at | ru_date(true) }}{% endif %}
+    </p>
+    <button class="btn btn--primary btn--block" type="submit">Сохранить</button>
+  </form>
+
+  <form method="post" action="/words/{{ card.id }}/delete" data-confirm="Удалить карточку «{{ card.text }}»?">
+    <button class="btn btn--link btn--danger" type="submit" style="border:0;width:100%">Удалить карточку</button>
+  </form>
+{% endblock %}

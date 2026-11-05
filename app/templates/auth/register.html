@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Регистрация — LinguaFlow{% endblock %}
+{% block page_class %}auth-wrap{% endblock %}
+{% block content %}
+  <h1 class="hand-l">Новая тетрадь</h1>
+  <p class="muted">Заведи аккаунт — и после занятия просто перепиши заметку сюда.</p>
+
+  {% if error %}<div class="alert alert--error" role="alert">{{ error }}</div>{% endif %}
+
+  <form class="form" method="post" action="/register">
+    <div class="field">
+      <label for="username">Имя пользователя</label>
+      <input class="input" id="username" name="username" value="{{ username or '' }}" autocomplete="username" autocapitalize="none" minlength="3" maxlength="50" required>
+    </div>
+    <div class="field">
+      <label for="password">Пароль</label>
+      <input class="input" id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+      <span class="caption">Не короче 8 символов</span>
+    </div>
+    <button class="btn btn--primary btn--block" type="submit">Создать аккаунт</button>
+  </form>
+  <p class="center">Уже есть аккаунт? <a href="/login">Войти</a></p>
+{% endblock %}

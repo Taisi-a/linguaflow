@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Готово — LinguaFlow{% endblock %}
+{% block content %}
+  {% if summary.total %}
+    <div class="result-art" aria-hidden="true">✓</div>
+    <h1 class="hand-l center">Готово!</h1>
+    <p class="heading center">Повторено <span class="marker marker--mint">{{ ru_plural(summary.total, "слово", "слова", "слов") }}</span></p>
+
+    <div class="stat-table">
+      <div class="stat-row"><span>Вспомнила сразу</span><b>{{ summary.recalled_first_try }}</b></div>
+      <div class="stat-row"><span>Вернутся сегодня ещё раз</span><b>{{ summary.again_today }}</b></div>
+      <div class="stat-row"><span>Вернутся завтра</span><b>{{ summary.tomorrow }}</b></div>
+    </div>
+  {% else %}
+    <div class="empty">
+      <p class="hand-m">Сегодня ничего не повторяли</p>
+      <p class="muted">Карточки подождут — загляни, когда будет минутка.</p>
+    </div>
+  {% endif %}
+
+  {% if streak %}
+    <div class="streak-line">
+      <div class="streak streak--small"><b>{{ streak }}</b><span>{{ plural(streak, "день", "дня", "дней") }}</span></div>
+      <span class="hand-m">серия продолжается</span>
+    </div>
+  {% endif %}
+
+  <div class="bottom-action">
+    <a class="btn btn--primary btn--block" href="/">На главную</a>
+  </div>
+{% endblock %}

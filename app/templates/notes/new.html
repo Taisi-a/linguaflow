@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Новая заметка — LinguaFlow{% endblock %}
+{% block content %}
+  <a class="back-link" href="/">Сегодня</a>
+  <h1 class="hand-l">Новая заметка</h1>
+
+  {% if error %}<div class="alert alert--error" role="alert">{{ error }}</div>{% endif %}
+
+  <form class="form" method="post" action="/notes" id="note-form" style="flex:1">
+    <div class="field">
+      <label for="lesson_date">Дата занятия</label>
+      <input class="input" type="date" id="lesson_date" name="lesson_date" value="{{ today }}" required>
+    </div>
+    <div class="field">
+      <label for="topic">Тема</label>
+      <input class="input" id="topic" name="topic" value="{{ form.topic or '' }}" placeholder="Phrasal verbs" maxlength="120">
+    </div>
+    <div class="field">
+      <label for="text">Заметка</label>
+      <textarea class="textarea" id="text" name="text" placeholder="come up with — придумать&#10;give up — бросить, сдаться&#10;look forward to + -ing&#10;не путать come up with и come across" required></textarea>
+      <span class="caption">Пиши как в тетради — слова найдём сами</span>
+    </div>
+    <div class="bottom-action">
+      <button class="btn btn--primary btn--block" type="submit" data-loading="Ищем слова…">Найти новые слова</button>
+    </div>
+  </form>
+{% endblock %}

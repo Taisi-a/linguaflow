@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ note.topic or "Заметка" }} — LinguaFlow{% endblock %}
+{% block content %}
+  <a class="back-link" href="/notes">Занятия</a>
+
+  {% if added is not none %}
+    <div class="alert alert--ok">Добавлено {{ ru_plural(added, "карточка", "карточки", "карточек") }}</div>
+  {% endif %}
+
+  <div>
+    <p class="note-card__date">{{ note.lesson_date | ru_date(true) }}</p>
+    <h1 class="hand-l">{{ note.topic or "Без темы" }}</h1>
+  </div>
+
+  <div class="note-text">{{ note.text }}</div>
+
+  {% if note.extracted is not none %}
+    <a class="btn btn--primary" href="/notes/{{ note.id }}/words">Подтвердить найденные слова</a>
+  {% endif %}
+
+  {% if note.cards %}
+    <h2 class="hand-m">Карточки из заметки</h2>
+    <div class="note-list">
+      {% for c in note.cards %}
+        <a class="dict-item" href="/words/{{ c.id }}/edit">
+          <span class="dict-item__main"><b>{{ c.text }}</b><br><span class="muted">{{ c.translation }}</span></span>
+          {% if c.kind.value == "rule" %}<span class="tag marker--pink">правило</span>{% endif %}
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" action="/notes/{{ note.id }}/delete" data-confirm="Удалить заметку? Карточки из неё останутся в словаре.">
+    <button class="btn btn--link btn--danger" type="submit" style="border:0">Удалить заметку</button>
+  </form>
+{% endblock %}

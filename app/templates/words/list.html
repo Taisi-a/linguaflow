@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Слова — LinguaFlow{% endblock %}
+{% block content %}
+  <h1 class="hand-l">Слова</h1>
+
+  <form class="search" method="get" action="/words" role="search">
+    <input class="input" name="q" value="{{ q }}" placeholder="Поиск по слову или переводу" aria-label="Поиск">
+    {% if kind %}<input type="hidden" name="kind" value="{{ kind }}">{% endif %}
+    <button class="btn btn--small" type="submit" style="min-height:50px">Найти</button>
+  </form>
+
+  <div class="filters">
+    <a class="pill {% if not kind %}is-active{% endif %}" href="/words?q={{ q | urlencode }}">Все</a>
+    <a class="pill {% if kind == 'word' %}is-active{% endif %}" href="/words?kind=word&q={{ q | urlencode }}">Слова</a>
+    <a class="pill {% if kind == 'rule' %}is-active{% endif %}" href="/words?kind=rule&q={{ q | urlencode }}">Правила</a>
+  </div>
+
+  {% if cards %}
+    <p class="caption">{{ ru_plural(cards|length, "карточка", "карточки", "карточек") }}</p>
+    <div class="note-list">
+      {% for c in cards %}
+        <a class="dict-item" href="/words/{{ c.id }}/edit">
+          <span class="dict-item__main">
+            <b>{{ c.text }}</b>{% if c.kind.value == "rule" %}<span class="tag marker--pink">правило</span>{% endif %}<br>
+            <span class="muted">{{ c.translation }}</span>
+          </span>
+          <span class="dict-item__meta caption">
+            {% if c.interval_days >= learned_interval %}<span class="marker marker--mint">выучено</span>
+            {% elif c.status.value == "new" %}новое
+            {% else %}повтор {{ c.due_at | ru_date }}{% endif %}
+          </span>
+        </a>
+      {% endfor %}
+    </div>
+  {% elif q or kind %}
+    <div class="empty"><p class="hand-m">Ничего не нашлось</p></div>
+  {% else %}
+    <div class="empty">
+      <p class="hand-m">Словарь пока пустой</p>
+      <p class="muted">Карточки появятся, когда ты добавишь первую заметку.</p>
+      <a class="btn btn--primary" href="/notes/new">Новая заметка</a>
+    </div>
+  {% endif %}
+{% endblock %}

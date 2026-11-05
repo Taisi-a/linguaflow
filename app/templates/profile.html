@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Профиль — LinguaFlow{% endblock %}
+{% block content %}
+  <header class="top">
+    <h1 class="hand-l">Профиль</h1>
+    <div class="streak"><b>{{ stats.streak }}</b><span>{{ plural(stats.streak, "день", "дня", "дней") }}</span></div>
+  </header>
+  <p class="heading">{{ user.username }}</p>
+
+  <div class="stat-table">
+    <div class="stat-row"><span>Карточек в словаре</span><b>{{ stats.cards }}</b></div>
+    <div class="stat-row"><span>Из них слов / правил</span><b>{{ stats.words }} / {{ stats.rules }}</b></div>
+    <div class="stat-row"><span>Выучено (интервал от 3 недель)</span><b>{{ stats.learned }}</b></div>
+    <div class="stat-row"><span>Всего повторений</span><b>{{ stats.reviews }}</b></div>
+    <div class="stat-row"><span>Вспоминаю за 30 дней</span><b>{{ stats.accuracy_30d ~ "%" if stats.accuracy_30d is not none else "—" }}</b></div>
+  </div>
+
+  <form method="post" action="/logout">
+    <button class="btn btn--block" type="submit">Выйти</button>
+  </form>
+{% endblock %}
